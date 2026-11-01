@@ -292,9 +292,9 @@ function sendSettingsToBoard() {
 
 // 高频读数会有噪声,两处防抖:
 // 1. 已经是 VIOLATION 时,要退到阈值 + 1cm 以外才算恢复 NORMAL,避免在阈值附近来回跳
-// 2. 板子报 AWAY 要持续 1 秒才算离开,偶尔一两条误读不会把坐姿计时清零
+// 2. 板子报 AWAY 要持续 10 秒才算离开,偶尔一两条误读不会把坐姿计时清零
 const HYSTERESIS_CM = 1;
-const AWAY_GRACE_MS = 1000;
+const AWAY_GRACE_MS = 10000;
 
 let presentSinceMs = null;
 let awaySinceMs = null;
@@ -344,10 +344,10 @@ function handleSerialLine(line) {
       presentStatus = distance_cm < limit ? "VIOLATION" : "NORMAL";
       lastPresentDistanceCm = distance_cm;
     } else if (lastPresentDistanceCm !== null) {
-      // AWAY 还没满 1 秒:沿用上一个正常距离(超量程时传感器会报 8190mm 之类的值)
+      // AWAY 还没满 10 秒:沿用上一个正常距离(超量程时传感器会报 8190mm 之类的值)
       distance_cm = lastPresentDistanceCm;
     }
-    // AWAY 还没满 1 秒时保持上一个坐姿状态
+    // AWAY 还没满 10 秒时保持上一个坐姿状态
     status = presentStatus;
   }
 
